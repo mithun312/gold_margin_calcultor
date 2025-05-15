@@ -1,7 +1,6 @@
 import streamlit as st
 import requests
 
-# --- Function to fetch live gold price from goldapi.io ---
 def fetch_live_gold_price(api_key):
     url = "https://www.goldapi.io/api/XAU/USD"
     headers = {'x-access-token': api_key, 'Content-Type': 'application/json'}
@@ -15,7 +14,6 @@ def fetch_live_gold_price(api_key):
     except Exception:
         return None
 
-# --- Calculation function ---
 def calculate_all(deposit, bonus_pct, use_bonus, trading_ratio, current_price, leverage, auto_max_ounces, ounces_to_trade_input):
     bonus_amount = deposit * bonus_pct / 100 if use_bonus else 0
     total_balance = deposit + bonus_amount
@@ -30,7 +28,6 @@ def calculate_all(deposit, bonus_pct, use_bonus, trading_ratio, current_price, l
     free_margin = total_balance - used_margin
     margin_level = (total_balance / used_margin) * 100 if used_margin != 0 else 0
 
-    # PL needed to reach margin levels (100% and 20%)
     pl_100_margin_level = used_margin - total_balance
     pl_20_margin_level = 0.2 * used_margin - total_balance
 
@@ -54,28 +51,23 @@ def calculate_all(deposit, bonus_pct, use_bonus, trading_ratio, current_price, l
         liquidation_price_level=liquidation_price_level,
     )
 
-# --- Streamlit UI ---
-
 st.title("Gold Margin Calculator")
 
-# Sidebar for leverage and ounces
+# Sidebar
 st.sidebar.header("Settings")
 leverage_option = st.sidebar.selectbox("Select Leverage", options=[1, 10, 50, 100, 200], index=3)
 auto_max_ounces = st.sidebar.checkbox("Auto max ounces to trade", value=True)
 
-# Main input section
-st.subheader("Deposit & Bonus")
+# Inputs
 deposit = st.number_input("Deposit Amount (USD)", min_value=0.0, value=3000.0, step=100.0)
 use_bonus = st.checkbox("Use Bonus", value=True)
-bonus_pct = 30  # fixed 30% bonus for this version
+bonus_pct = 30
 st.write(f"Bonus Percentage: {bonus_pct}%")
 
-st.subheader("Trading Settings")
 trading_ratio = st.selectbox("Trading Ratio (Trading Amount / Total Balance)", options=[20, 30, 40, 50, 60, 70, 80], index=1)
 
-# Live price fetch with manual override toggle
-st.subheader("Gold Price (XAU/USD)")
-api_key = "goldapi-2u42yussmappvwby-io"  # replace with your key
+# Price input
+api_key = "goldapi-2u42yussmappvwby-io"
 live_price = fetch_live_gold_price(api_key)
 manual_price_toggle = st.checkbox("Enter Price Manually", value=False)
 
@@ -89,19 +81,19 @@ else:
         st.warning("Unable to fetch live price, please enter manually.")
         current_price = st.number_input("Enter Current Gold Price", min_value=0.0, value=3200.0)
 
-# Ounces to trade input if not auto max
 if not auto_max_ounces:
     ounces_to_trade_input = st.number_input("Ounces to Trade", min_value=0.0, value=0.0, step=0.01)
 else:
     ounces_to_trade_input = 0.0
 
-if st.button("Calculate") or 'calculated' not in st.session_state:
-    # Calculate results
-    results = calculate_all(deposit, bonus_pct, use_bonus, trading_ratio, current_price, leverage_option, auto_max_ounces, ounces_to_trade_input)
-    st.session_state['results'] = results
-    st.session_state['calculated'] = True
+# Calculate/Recalculate buttons
+if st.button("Calculate") or "results" not in st.session_state:
+    st.session_state['results'] = calculate_all(deposit, bonus_pct, use_bonus, trading_ratio, current_price, leverage_option, auto_max_ounces, ounces_to_trade_input)
 
-if st.session_state.get('calculated', False):
+if st.button("Recalculate"):
+    st.session_state['results'] = calculate_all(deposit, bonus_pct, use_bonus, trading_ratio, current_price, leverage_option, auto_max_ounces, ounces_to_trade_input)
+
+if "results" in st.session_state:
     r = st.session_state['results']
 
     st.markdown("---")
@@ -126,7 +118,6 @@ if st.session_state.get('calculated', False):
     st.write(f"**Price Drop Needed for Liquidation:** ${r['price_drop_liquidation']:,.2f}")
     st.write(f"**Liquidation Price Level:** ${r['liquidation_price_level']:,.2f}")
 
-    # PL move simulator
     st.subheader("PL Move Simulator")
     price_move = st.number_input("Enter price move (positive or negative)", value=0.0, step=0.1)
     if price_move != 0:
@@ -138,7 +129,3 @@ if st.session_state.get('calculated', False):
         st.write(f"Profit/Loss from move: ${new_pl:,.2f}")
         st.write(f"New Equity: ${new_equity:,.2f}")
         st.write(f"New Margin Level: {new_margin_level:,.2f}%")
-
-if st.button("Recalculate"):
-    st.session_state['calculated'] = False
-    st.experimental_rerun()
