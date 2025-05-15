@@ -62,4 +62,3 @@ simulated_pl = leveraged_ounces * price_move
 st.markdown(f"**Profit/Loss from Move:** ${simulated_pl:.2f}")
 
 st.write("\n") if st.button("Recalculate"): st.experimental_rerun()
-
