@@ -2,23 +2,23 @@ import streamlit as st
 
 st.title("Gold Margin Trading Calculator")
 
-# Sidebar Inputs
-st.sidebar.header("Input Parameters")
+# Main Inputs
+st.header("Trading Parameters")
 
-# Inputs
-deposit = st.sidebar.number_input("Amount Deposited ($)", min_value=0.0, value=3000.0)
+deposit = st.number_input("Amount Deposited ($)", min_value=0.0, value=3000.0)
 
-use_bonus = st.sidebar.checkbox("Apply Bonus?", value=True)
-bonus_percent = st.sidebar.slider("Bonus Percentage (%)", 0, 100, 30) if use_bonus else 0
+use_bonus = st.checkbox("Apply Bonus?", value=True)
+bonus_percent = st.slider("Bonus Percentage (%)", 0, 100, 30) if use_bonus else 0
 
-leverage = st.sidebar.number_input("Leverage (e.g., 100 for 1:100)", min_value=1, value=100)
-gold_price = st.sidebar.number_input("Gold Price per Ounce ($)", min_value=0.0, value=3175.0)
-
-trading_ratio = st.sidebar.selectbox("Trading Ratio (Trading:Balance)", ["20:80", "30:70", "50:50"])
+trading_ratio = st.selectbox("Trading Ratio (Trading:Balance)", ["20:80", "30:70", "50:50"])
 trading_ratio_value = float(trading_ratio.split(":")[0]) / 100
 
-margin_call_100 = 100
-margin_call_50 = 50
+gold_price = st.number_input("Gold Price per Ounce ($)", min_value=0.0, value=3175.0)
+
+# Sidebar Inputs
+st.sidebar.header("Leverage & Trade Size")
+
+leverage = st.sidebar.number_input("Leverage (e.g., 100 for 1:100)", min_value=1, value=100)
 
 # Calculations
 bonus = deposit * (bonus_percent / 100) if use_bonus else 0
@@ -28,10 +28,8 @@ trading_funds = total_balance * trading_ratio_value
 balance_amount = total_balance - trading_funds
 
 buying_power = trading_funds * leverage
-ounces_traded = buying_power / gold_price
+max_ounces = round(buying_power / gold_price, 2)
 
-# User selects how many ounces to trade (within max allowed)
-max_ounces = round(ounces_traded, 2)
 selected_ounces = st.sidebar.number_input(f"Ounces to Trade (max {max_ounces} oz)", min_value=0.0, value=max_ounces, max_value=max_ounces)
 
 used_margin = (selected_ounces * gold_price) / leverage
@@ -39,6 +37,9 @@ free_margin = total_balance - used_margin
 margin_level = (total_balance / used_margin) * 100 if used_margin != 0 else 0
 
 # Liquidation Calculations
+margin_call_100 = 100
+margin_call_50 = 50
+
 equity_at_100 = used_margin * (margin_call_100 / 100)
 pl_needed_100 = equity_at_100 - total_balance
 
@@ -63,7 +64,7 @@ st.write(f"*Trading Ratio:* {trading_ratio}")
 st.write(f"*Trading Amount (Funds):* ${trading_funds:,.2f}")
 st.write(f"*Balance Amount (Non-Trading):* ${balance_amount:,.2f}")
 
-st.write(f"*Max Ounces You Can Buy:* {ounces_traded:,.4f} oz")
+st.write(f"*Max Ounces You Can Buy:* {max_ounces:,.4f} oz")
 st.write(f"*Leverage Given by Company:* 1:{leverage}")
 st.write(f"*Ounces Selected to Trade:* {selected_ounces:,.4f} oz")
 
