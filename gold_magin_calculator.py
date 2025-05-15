@@ -87,5 +87,5 @@ def main():
     pl_result = pl_move * ounces_to_trade * leverage
     st.write(f"Potential P/L for this move: ${pl_result:.2f}")
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     main()
