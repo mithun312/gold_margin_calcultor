@@ -1,15 +1,17 @@
 import streamlit as st
 import requests
 
-# Function to fetch live gold price from Finnhub
+# Function to fetch live gold price from Alpha Vantage
 def fetch_live_gold_price():
     try:
         response = requests.get(
-            "https://finnhub.io/api/v1/quote?symbol=OANDA:XAU_USD&token=d0j2v11r01ql09hprm30d0j2v11r01ql09hprm3g"
+            "https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=XAU&to_currency=USD&apikey=HZGG71BFGTL6P3KS"
         )
         data = response.json()
-        return data["c"]
-    except:
+        price = float(data["Realtime Currency Exchange Rate"]["5. Exchange Rate"])
+        return price
+    except Exception as e:
+        print("Error:", e)
         return None
 
 st.title("Gold Margin Trading Calculator")
@@ -37,9 +39,9 @@ use_live_price = st.checkbox("Use Live Gold Price (XAU/USD)?", value=True)
 if use_live_price:
     gold_price = fetch_live_gold_price()
     if gold_price:
-        st.write(f"*Current Live Gold Price:* ${gold_price}")
+        st.success(f"*Current Live Gold Price:* ${gold_price:.2f}")
     else:
-        st.error("Unable to fetch live gold price — check connection.")
+        st.error("Unable to fetch live gold price — enter manually.")
         gold_price = st.number_input("Enter Gold Price per Ounce ($)", min_value=0.0, value=3175.0)
 else:
     gold_price = st.number_input("Enter Gold Price per Ounce ($)", min_value=0.0, value=3175.0)
@@ -111,4 +113,3 @@ if st.button("Calculate"):
     price_move = st.number_input("Price Move in $ (up/down)", value=10)
     pl_change = selected_ounces * price_move
     st.write(f"*P/L for ${price_move} move:* ${pl_change:,.2f}")
-    
