@@ -1,4 +1,5 @@
-import streamlit as st import requests
+import streamlit as st 
+import requests
 
 API setup
 
