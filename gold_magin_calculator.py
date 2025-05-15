@@ -1,6 +1,8 @@
 import streamlit as st
 import requests
 
+API_KEY = "goldapi-2u42yussmappvwby-io"  # <-- Your GoldAPI key here
+
 def get_gold_price(api_key):
     url = "https://www.goldapi.io/api/XAU/USD"
     headers = {
@@ -9,6 +11,8 @@ def get_gold_price(api_key):
     }
     try:
         response = requests.get(url, headers=headers)
+        st.write("API response status:", response.status_code)
+        st.write("API response content:", response.text)
         if response.status_code == 200:
             data = response.json()
             return data.get("price")
@@ -34,16 +38,8 @@ def main():
     use_bonus = st.checkbox("Use Bonus", value=True)
     trading_ratio = st.selectbox("Trading Ratio (%)", options=[10, 20, 30, 40, 50, 60, 70, 80, 90, 100], index=3)
 
-    # Session state for API key
-    if 'api_key' not in st.session_state:
-        st.session_state.api_key = ""
-
-    st.session_state.api_key = st.text_input("Enter your GoldAPI Key", value=st.session_state.api_key)
-
     # Fetch live price or manual input
-    price = None
-    if st.session_state.api_key:
-        price = get_gold_price(st.session_state.api_key)
+    price = get_gold_price(API_KEY)
     if price is None:
         price = st.number_input("Current Price of Gold (USD per ounce)", min_value=0.0, value=3175.0)
 
