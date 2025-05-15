@@ -1,15 +1,14 @@
 import streamlit as st
 import requests
 
-# Function to fetch live gold price
+# Function to fetch live gold price from Finnhub
 def fetch_live_gold_price():
     try:
-        response = requests.get("https://api.metals.live/v1/spot")
+        response = requests.get(
+            "https://finnhub.io/api/v1/quote?symbol=OANDA:XAU_USD&token=d0j2v11r01ql09hprm30d0j2v11r01ql09hprm3g"
+        )
         data = response.json()
-        for item in data:
-            if 'gold' in item:
-                return item['gold']
-        return None
+        return data["c"]
     except:
         return None
 
@@ -19,7 +18,7 @@ st.title("Gold Margin Trading Calculator")
 st.sidebar.header("Leverage & Trade Size")
 leverage = st.sidebar.number_input("Leverage (e.g., 100 for 1:100)", min_value=1, value=100)
 
-# Placeholder for max ounces (we'll set this after calculating)
+# Placeholder for max ounces
 selected_ounces_placeholder = st.sidebar.empty()
 
 # Main Inputs
@@ -112,3 +111,4 @@ if st.button("Calculate"):
     price_move = st.number_input("Price Move in $ (up/down)", value=10)
     pl_change = selected_ounces * price_move
     st.write(f"*P/L for ${price_move} move:* ${pl_change:,.2f}")
+    
