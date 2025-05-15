@@ -60,9 +60,12 @@ auto_max_ounces = st.sidebar.checkbox("Auto max ounces to trade", value=True)
 
 # Inputs
 deposit = st.number_input("Deposit Amount (USD)", min_value=0.0, value=3000.0, step=100.0)
+
 use_bonus = st.checkbox("Use Bonus", value=True)
-bonus_pct = 30
-st.write(f"Bonus Percentage: {bonus_pct}%")
+if use_bonus:
+    bonus_pct = st.slider("Bonus Percentage (%)", min_value=0, max_value=100, value=30)
+else:
+    bonus_pct = 0
 
 trading_ratio = st.selectbox("Trading Ratio (Trading Amount / Total Balance)", options=[20, 30, 40, 50, 60, 70, 80], index=1)
 
@@ -100,7 +103,10 @@ if "results" in st.session_state:
     st.subheader("Calculation Results")
 
     st.write(f"**Amount Deposited:** ${deposit:,.2f}")
-    st.write(f"**Bonus Amount Given:** ${r['bonus_amount']:,.2f} ({bonus_pct}%)" if use_bonus else "Bonus not used")
+    if use_bonus:
+        st.write(f"**Bonus Amount Given:** ${r['bonus_amount']:,.2f} ({bonus_pct}%)")
+    else:
+        st.write("Bonus not used")
     st.write(f"**Total Balance:** ${r['total_balance']:,.2f}")
     st.write(f"**Trading Ratio:** {trading_ratio}%")
     st.write(f"**Trading Amount:** ${r['trading_amount']:,.2f}")
